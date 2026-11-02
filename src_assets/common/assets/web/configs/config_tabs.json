@@ -103,6 +103,7 @@
       "av1_mode": 0,
       "capture": "",
       "fp16_sdr_gamma_encoded": "disabled",
+      "portal_virtual_display": "disabled",
       "encoder": ""
     }
   },

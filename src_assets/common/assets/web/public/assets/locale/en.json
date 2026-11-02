@@ -393,6 +393,8 @@
     "port_udp": "UDP",
     "port_warning": "Exposing the Web UI to the internet is a security risk! Proceed at your own risk!",
     "port_web_ui": "Web UI",
+    "portal_virtual_display": "Use a virtual monitor with XDG Portal capture",
+    "portal_virtual_display_desc": "With the XDG Portal capture method, ask the desktop for a new virtual monitor sized to the client for each session, instead of capturing an existing monitor. The client becomes an extra screen of the desktop. Requires a portal with virtual monitor support (e.g. GNOME).",
     "qp": "Quantization Parameter",
     "qp_desc": "Some devices may not support Constant Bit Rate. For those devices, QP is used instead. Higher value means more compression, but less quality.",
     "qsv_coder": "QuickSync Coder (H264)",
