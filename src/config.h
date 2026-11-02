@@ -230,6 +230,7 @@ namespace config {
 
     int max_bitrate;  ///< Maximum bitrate ceiling in kbps for bitrate requested from the client.
     double minimum_fps_target;  ///< Lowest framerate that will be used when streaming. Range 0-1000, 0 = half of client's requested framerate.
+    bool portal_virtual_display;  ///< Linux portal capture: ask the compositor for a virtual monitor sized to the client instead of capturing an existing monitor.
   };
 
   /**

@@ -96,6 +96,15 @@ const config = ref(props.config)
               default="false"
     ></Checkbox>
 
+    <!-- Portal virtual display -->
+    <Checkbox v-if="platform === 'linux'"
+              class="mb-3"
+              id="portal_virtual_display"
+              locale-prefix="config"
+              v-model="config.portal_virtual_display"
+              default="false"
+    ></Checkbox>
+
     <!-- Encoder -->
     <div class="mb-3">
       <label for="encoder" class="form-label">{{ $t('config.encoder') }}</label>

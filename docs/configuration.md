@@ -2324,6 +2324,34 @@ consent prompt for directory ACLs, so the Web UI shows setup steps for correctin
     </tr>
 </table>
 
+### portal_virtual_display
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            When using `portal` capture, ask the compositor for a new virtual monitor for each session instead of
+            capturing an existing monitor. The virtual monitor is sized to the client's resolution and removed when
+            the stream ends, so the client becomes an extra screen of the desktop. Because virtual sources are
+            restored without matching a physical monitor, the screen-sharing permission is only asked once.
+            Requires a portal implementation with virtual source support (e.g. xdg-desktop-portal-gnome).
+            @note{Applies to Linux only, with `capture = portal`.}
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            disabled
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            portal_virtual_display = enabled
+            @endcode</td>
+    </tr>
+</table>
+
 ### encoder
 
 <table>

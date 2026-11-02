@@ -12,11 +12,13 @@
 
 // local includes
 #include "pipewire.cpp"
+#include "src/config.h"
 #include "src/globals.h"
 
 namespace {
   // Portal configuration constants
   constexpr uint32_t SOURCE_TYPE_MONITOR = 1;
+  constexpr uint32_t SOURCE_TYPE_VIRTUAL = 4;
   constexpr uint32_t CURSOR_MODE_EMBEDDED = 2;
 
   constexpr uint32_t PERSIST_FORGET = 0;
@@ -654,9 +656,16 @@ namespace portal {
       g_variant_builder_add(&builder, "o", session_path);
       g_variant_builder_open(&builder, G_VARIANT_TYPE("a{sv}"));
       g_variant_builder_add(&builder, "{sv}", "handle_token", g_variant_new_string(request_token));
-      g_variant_builder_add(&builder, "{sv}", "types", g_variant_new_uint32(SOURCE_TYPE_MONITOR));
+      // A virtual source makes the compositor create a new monitor for this session (sized by the
+      // PipeWire format we negotiate, i.e. the client's resolution). Unlike monitor sources, virtual
+      // sources are restored without matching an existing monitor, so the permission is remembered.
+      const bool virtual_display = config::video.portal_virtual_display;
+      if (virtual_display) {
+        BOOST_LOG(info) << "[portalgrab] Requesting a virtual monitor from the portal"sv;
+      }
+      g_variant_builder_add(&builder, "{sv}", "types", g_variant_new_uint32(virtual_display ? SOURCE_TYPE_VIRTUAL : SOURCE_TYPE_MONITOR));
       g_variant_builder_add(&builder, "{sv}", "cursor_mode", g_variant_new_uint32(CURSOR_MODE_EMBEDDED));
-      g_variant_builder_add(&builder, "{sv}", "multiple", g_variant_new_boolean(TRUE));
+      g_variant_builder_add(&builder, "{sv}", "multiple", g_variant_new_boolean(virtual_display ? FALSE : TRUE));
       if (persist) {
         g_variant_builder_add(&builder, "{sv}", "persist_mode", g_variant_new_uint32(PERSIST_UNTIL_REVOKED));
         if (!restore_token_t::empty()) {
@@ -1002,6 +1011,9 @@ namespace portal {
    */
   class portal_t: public pipewire::pipewire_display_t {
   public:
+    int requested_width = 0;  ///< Client width, used to size a portal virtual monitor.
+    int requested_height = 0;  ///< Client height, used to size a portal virtual monitor.
+
     int configure_stream(const std::string &display_name, int &out_pipewire_fd, uint32_t &out_pipewire_node, uint64_t &out_pipewire_object_serial [[maybe_unused]]) override {
       // Connect DBus portal session
       if (dbus.init() < 0) {
@@ -1046,6 +1058,11 @@ namespace portal {
       this->offset_y = stream.pos_y;
       this->width = stream.width;
       this->height = stream.height;
+      if (config::video.portal_virtual_display && (this->width <= 0 || this->height <= 0) && requested_width > 0 && requested_height > 0) {
+        // Virtual monitors get their size from format negotiation: prefer the client's resolution.
+        this->width = requested_width;
+        this->height = requested_height;
+      }
       this->logical_width = 0;  // Explicitly mark for pipewire_display_t to try to figure this out.
       this->logical_height = 0;  // Explicitly Mark for pipewire_display_t to try to figure this out.
       // Flag successful setup
@@ -1102,6 +1119,8 @@ namespace platf {
     }
 
     auto portal = std::make_shared<portal::portal_t>();
+    portal->requested_width = config.width;
+    portal->requested_height = config.height;
     if (portal->init(hwdevice_type, display_name, config)) {
       return nullptr;
     }
